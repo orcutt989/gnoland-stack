@@ -7,21 +7,22 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func NewIndexer(ctx *pulumi.Context, nodeServiceName pulumi.StringInput, nodeServicePort pulumi.IntInput) (*appsv1.StatefulSet, error) {
-	statefulSet, err := appsv1.NewStatefulSet(ctx, "tx-indexer-statefulset", &appsv1.StatefulSetArgs{
+func NewIndexer(ctx *pulumi.Context, namespace pulumi.StringInput, nodeServiceName pulumi.StringInput, nodeServicePort pulumi.IntInput) (*appsv1.StatefulSet, *corev1.Service, error) {
+	appLabels := pulumi.StringMap{
+		"app": pulumi.String("tx-indexer"),
+	}
+	var indexerListenPort = pulumi.Int(8545)
+	var indexerPortName = pulumi.String("indexer-rpc")
+	statefulSet, err := appsv1.NewStatefulSet(ctx, "tx-indexer", &appsv1.StatefulSetArgs{
 		Spec: appsv1.StatefulSetSpecArgs{
 			Replicas: pulumi.Int(1),
 			Selector: &metav1.LabelSelectorArgs{
-				MatchLabels: pulumi.StringMap{
-					"app": pulumi.String("tx-indexer-statefulset"),
-				},
+				MatchLabels: appLabels,
 			},
-			ServiceName: nodeServiceName,
+			ServiceName: pulumi.String("tx-indexer-service"),
 			Template: &corev1.PodTemplateSpecArgs{
 				Metadata: &metav1.ObjectMetaArgs{
-					Labels: pulumi.StringMap{
-						"app": pulumi.String("tx-indexer-service"),
-					},
+					Labels: appLabels,
 				},
 				Spec: &corev1.PodSpecArgs{
 					Containers: corev1.ContainerArray{
@@ -29,9 +30,15 @@ func NewIndexer(ctx *pulumi.Context, nodeServiceName pulumi.StringInput, nodeSer
 							Name:  pulumi.String("tx-indexer"),
 							Image: pulumi.String("ghcr.io/orcutt989/tx-indexer:main"),
 							Command: pulumi.StringArray{
-								pulumi.String("indexer"),
-								pulumi.String("start"),
-								pulumi.Sprintf("--remote http://%s:%d --db-path indexer-db", nodeServiceName, nodeServicePort),
+								pulumi.String("sh"),
+								pulumi.String("-c"),
+								pulumi.Sprintf("indexer start --remote http://%s.%s.svc.cluster.local:%d --db-path indexer-db --listen-address 0.0.0.0:%d", nodeServiceName, namespace, nodeServicePort, indexerListenPort),
+							},
+							Ports: corev1.ContainerPortArray{
+								corev1.ContainerPortArgs{
+									ContainerPort: indexerListenPort,
+									Name:          indexerPortName,
+								},
 							},
 						},
 					},
@@ -40,8 +47,29 @@ func NewIndexer(ctx *pulumi.Context, nodeServiceName pulumi.StringInput, nodeSer
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return statefulSet, nil
+	// Create a Kubernetes Service for the pods
+	indexerService, err := corev1.NewService(ctx, "tx-indexer-service", &corev1.ServiceArgs{
+		Metadata: &metav1.ObjectMetaArgs{
+			Labels: appLabels,
+			Name:   pulumi.String("tx-indexer-service"),
+		},
+		Spec: &corev1.ServiceSpecArgs{
+			Selector: appLabels,
+			Ports: corev1.ServicePortArray{
+				corev1.ServicePortArgs{
+					Name:       indexerPortName,
+					Port:       indexerListenPort,
+					TargetPort: indexerPortName,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return statefulSet, indexerService, nil
 }

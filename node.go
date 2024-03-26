@@ -7,8 +7,12 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func NewNode(ctx *pulumi.Context, appLabels pulumi.StringMap, servicePort pulumi.IntInput) (*appsv1.StatefulSet, *corev1.Service, error) {
+func NewNode(ctx *pulumi.Context) (*appsv1.StatefulSet, *corev1.Service, error) {
 	// Deploy the StatefulSet for pods
+	// Define labels for the app
+	appLabels := pulumi.StringMap{
+		"app": pulumi.String("gnoland"),
+	}
 	var port = pulumi.Int(26657)
 	var portName = pulumi.String("gnoland-rpc")
 	statefulSet, err := appsv1.NewStatefulSet(ctx, "node", &appsv1.StatefulSetArgs{
@@ -27,9 +31,10 @@ func NewNode(ctx *pulumi.Context, appLabels pulumi.StringMap, servicePort pulumi
 						corev1.ContainerArgs{
 							Name:  pulumi.String("gnoland"),
 							Image: pulumi.String("ghcr.io/gnolang/gno:latest"),
-							Command: pulumi.StringArray{
-								pulumi.String("gnoland"),
-								pulumi.String("start"),
+							Args: pulumi.StringArray{
+								pulumi.String("sh"),
+								pulumi.String("-c"),
+								pulumi.String("gnoland start --skip-start=true && sed -i \"s#laddr = \\\".*:26657\\\"#laddr = \\\"tcp://0.0.0.0:26657\\\"#\" ./testdir/config/config.toml && gnoland start"),
 							},
 							Ports: corev1.ContainerPortArray{
 								corev1.ContainerPortArgs{
@@ -58,7 +63,7 @@ func NewNode(ctx *pulumi.Context, appLabels pulumi.StringMap, servicePort pulumi
 			Ports: corev1.ServicePortArray{
 				corev1.ServicePortArgs{
 					Name:       portName,
-					Port:       pulumi.Int(80),
+					Port:       pulumi.Int(26657),
 					TargetPort: portName,
 				},
 			},

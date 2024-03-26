@@ -6,23 +6,33 @@ import (
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		// Define labels for the app
-		appLabels := pulumi.StringMap{
-			"app": pulumi.String("gnoland"),
-		}
 
-		// Deploy the node StatefulSet and Service
-		nodeServicePort := pulumi.Int(80)
+		// Static port for now for indexer and supernova to find RPC of node
+		nodeServicePort := pulumi.Int(26657)
 
-		// Deploy nodeStatefulSet and nodeService
-		statefulSet, nodeService, err := NewNode(ctx, appLabels, nodeServicePort)
+		// Deploy gno.land node
+		_, _, err := NewNode(ctx)
 		if err != nil {
 			return err
 		}
 
-		// Export outputs if needed
-		ctx.Export("nodeStatefulSetName", statefulSet.Metadata.Name())
-		ctx.Export("nodeServiceName", nodeService.Metadata.Name())
+		// Set the namespace and service name as static values
+		// TODO dynamic update
+		namespace := pulumi.String("default")
+		serviceName := pulumi.String("node-service")
+
+		// Deploys the tx-indexer
+		_, _, err = NewIndexer(ctx, namespace, serviceName, nodeServicePort)
+		if err != nil {
+			return err
+		}
+
+		var sleepSeconds = pulumi.Int(10)
+		// Runs a Supernova job
+		_, err = NewSupernova(ctx, namespace, serviceName, nodeServicePort, sleepSeconds)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
