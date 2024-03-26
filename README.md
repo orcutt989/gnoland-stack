@@ -8,6 +8,16 @@ This repo allows you to:
 
 ## Getting started
 * [Install minikube](https://minikube.sigs.k8s.io/docs/start/#:~:text=1,Installation)
+  * Nice local Kubernetes option
 * [Install pulumi](https://www.pulumi.com/docs/install/)
-* `minikube start`
-* `cd gnoland-stack`
+  * Infrastructure as code
+* [Install k9s](https://k9scli.io/topics/install/)
+  * Allows you to interact visually with the Kubernetes cluster
+* Perform these commands
+  * `minikube start`
+  * `cd gnoland-stack`
+  * `pulumi up`
+  * `k9s` (maybe in another terminal to watch)
+  
+
+![terminal](image.gif)
