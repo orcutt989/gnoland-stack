@@ -11,14 +11,13 @@ This repo allows you to:
   * Nice local Kubernetes option
 * [Install pulumi](https://www.pulumi.com/docs/install/)
   * Infrastructure as code
-* [Install k9s](https://k9scli.io/topics/install/)
+* [Install k9s](https://k9scli.io/topics/install/) and/or [kubectl](https://kubernetes.io/docs/tasks/tools/)
   * Allows you to interact visually with the Kubernetes cluster
 * Perform these commands
   * `minikube start`
   * `cd gnoland-stack`
   * `pulumi up`
   * `k9s` (maybe in another terminal to watch)
-  * `kubectl` if not using k9s
   
 ![terminal](image.gif)
 
