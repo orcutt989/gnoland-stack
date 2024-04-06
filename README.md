@@ -29,6 +29,6 @@ Forward the port for the gnoland-metrics service with kubectl
 kubectl port-forward service/gnoland-metrics-service 8080:808
 ```
 
-Browse to localhost:8080/dashboard in your browser
+Browse to **http://localhost:8080/dashboard** in your browser
 
 ![alt text](image.png)
