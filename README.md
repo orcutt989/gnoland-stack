@@ -18,7 +18,7 @@ This repo allows you to:
   * `cd gnoland-stack`
   * `pulumi up`
   * `k9s` (maybe in another terminal to watch)
-  * kubectl if not using k9s
+  * `kubectl` if not using k9s
   
 ![terminal](image.gif)
 
