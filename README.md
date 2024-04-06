@@ -18,12 +18,13 @@ This repo allows you to:
   * `cd gnoland-stack`
   * `pulumi up`
   * `k9s` (maybe in another terminal to watch)
+  * kubectl if not using k9s
   
 ![terminal](image.gif)
 
 ## Access the dashboard
 
-Forward the port for the gnoland-metrics service
+Forward the port for the gnoland-metrics service with kubectl
 
 ```bash
 kubectl port-forward service/gnoland-metrics-service 8080:808
