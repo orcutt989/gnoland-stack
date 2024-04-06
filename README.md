@@ -4,7 +4,7 @@ This repo allows you to:
 * start up a [gno.land blockchain node](https://github.com/gnolang/gno)
 * start up a [transaction indexer](https://github.com/gnolang/tx-indexer)
 * start a configurable recurring [supernova](https://github.com/gnolang/supernova) test simulating network activity
-* Display various blockchain metrics on a dashboard
+* Display various blockchain metrics on a dashboard https://github.com/orcutt989/gnoland-metrics
 
 ## Getting started
 * [Install minikube](https://minikube.sigs.k8s.io/docs/start/#:~:text=1,Installation)
@@ -19,5 +19,16 @@ This repo allows you to:
   * `pulumi up`
   * `k9s` (maybe in another terminal to watch)
   
-
 ![terminal](image.gif)
+
+## Access the dashboard
+
+Forward the port for the gnoland-metrics service
+
+```bash
+kubectl port-forward service/gnoland-metrics-service 8080:808
+```
+
+Browse to localhost:8080/dashboard in your browser
+
+![alt text](image.png)

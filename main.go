@@ -34,6 +34,14 @@ func main() {
 			return err
 		}
 
+		// Deploys gnoland-metrics
+		indexerPort := pulumi.Int(8545)
+		indexerServiceName := pulumi.String("tx-indexer-service")
+		_, _, err = NewMetrics(ctx, namespace, indexerServiceName, indexerPort)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
